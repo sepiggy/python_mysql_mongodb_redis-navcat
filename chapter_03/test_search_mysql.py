@@ -68,17 +68,17 @@ class MysqlSearch():
 
         return rest
 
-    def get_more(self, page, page_size):
+    def get_more_by_page(self, page, page_size):
         '''
-        分页
-        :param page:
-        :param page_size:
+        分页查询数据
+        :param page: 第几页
+        :param page_size: 分页大小
         :return:
         '''
         offset = (page - 1) * page_size
         sql = 'SELECT * FROM `news` WHERE `types` = %s ORDER BY `created_at` DESC LIMIT %s, %s;'
         cursor = self.conn.cursor()
-        cursor.execute(sql, ('types1',), )
+        cursor.execute(sql, ('百家', offset, page_size))
         rest = [dict(zip([k[0] for k in cursor.description], row)) for row in cursor.fetchall()]
         if cursor and self.conn:
             cursor.close()
@@ -86,15 +86,56 @@ class MysqlSearch():
 
         return rest
 
+    def add_one(self):
+        # 准备 SQL
+        try:
+            sql = (
+                "INSERT INTO `news`(`title`, `image`, `content`, `types`, `is_valid`) "
+                "VALUE(%s, %s, %s, %s, %s);"
+            )
+
+            # 获取连接和 cursor
+            conn = self.conn
+            cursor = conn.cursor()
+
+            # 执行 SQL
+            # 提交数据到数据库
+            cursor.execute(sql, ('标题11', '/static/img/news/01.png', '新闻内容5', '推荐', 1))
+            # 1 / 0
+            cursor.execute(sql, ('标题12', '/static/img/news/01.png', '新闻内容6', '推荐', 1, 'hello'))
+
+            # 提交事务, 不加下面这行数据不会真正写到数据库里, 会发生事务回滚
+            self.conn.commit()
+
+        except:
+            print('error')
+            # 部分提交
+            # self.conn.commit()
+
+            # 回滚事务
+            self.conn.rollback()
+        finally:
+            # 关闭 cursor 和 连接
+            cursor.close()
+            self.close_conn()
+
 
 def main():
     obj = MysqlSearch()
     # rest = obj.get_one()
     # print(rest['title'])
-    rest = obj.get_more()
-    for item in rest:
-        print(item)
-        print('-------')
+
+    # rest = obj.get_more()
+    # for item in rest:
+    #     print(item)
+    #     print('-------')
+
+    # rest = obj.get_more_by_page(2, 3)
+    # for item in rest:
+    #     print(item)
+    #     print('-------')
+
+    obj.add_one()
 
 
 if __name__ == '__main__':

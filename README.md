@@ -39,20 +39,85 @@
     - virtualenv
     - pip install mysql-client
     
-2. 使用 Python 连接数据库
+2. 获取数据库连接
+    - 利用 `mysql-client` 连接 MySQL, 需要提供必要的连接参数, 如下所示
     ```python
-
+    conn = MySQLdb.connect(host='127.0.0.1', user='root', passwd='12345', db='news', port=3306, charset='utf8')
     ```
 
-3. 使用 Python 查询数据库中的数据
-    - 准备 SQL
-    - 找到 cursor
-    - 执行 SQL
-    - 拿到结果
-    - 处理结果
-    - 关闭 cursor / 连接
+3. 查询操作
+    - 在获取完数据库的连接的基础上, 可以进行查询操作
     
-4. 使用 Python 新增数据到数据库
+    - 查询操作的大致步骤如下:
+        - 准备 SQL
+        - 获取 cursor
+        - 执行 SQL
+        - 获取执行结果
+        - 处理结果
+        - 关闭 cursor 和连接
+        ```python
+        # 准备 SQL (防止 SQL 注入)
+        sql = 'SELECT * FROM `news` WHERE `types` = %s ORDER BY `created_at` DESC;'
+        # 获得 cursor
+        cursor = self.conn.cursor()
+        # 执行 SQL
+        cursor.execute(sql, ('types1',))
+        # 获取和处理结果
+        rest = dict(zip([k[0] for k in cursor.description], cursor.fetchone()))
+        # 关闭 cursor 和连接
+        if cursor and self.conn:
+            cursor.close()
+            self.close_conn() 
+        ```
+    - `mysql-client` 提供的查询函数
+        - Cursor.fetchone(): 获取一条查询记录
+        - Cursor.fetchall(): 获取多条查询记录
+        - Cursor.description: 获取查询字段
+        
+4. 增删改操作
+    - 增删改操作, 会对数据库进行修改, 涉及到事务操作
+        - Cursor.commit(): 提交事务
+        - Cursor.rollback(): 回滚事务
+    
+    - 最佳实践 
+        - 事务提交操作放在 `try` 语句块中
+        - 事务回滚操作放在 `except` 语句块中
+        - 关闭 Cursor 和数据库连接操作放到 `finally` 语句块中
+        - 一个例子
+            ```python
+            def add_one(self):
+                # 准备 SQL
+                try:
+                    sql = (
+                        "INSERT INTO `news`(`title`, `image`, `content`, `types`, `is_valid`) "
+                        "VALUE(%s, %s, %s, %s, %s);"
+                    )
+
+                    # 获取连接和 cursor
+                    conn = self.conn
+                    cursor = conn.cursor()
+
+                    # 执行 SQL
+                    # 提交数据到数据库
+                    cursor.execute(sql, ('标题11', '/static/img/news/01.png', '新闻内容5', '推荐', 1))
+                    # 1 / 0
+                    cursor.execute(sql, ('标题12', '/static/img/news/01.png', '新闻内容6', '推荐', 1, 'hello'))
+
+                    # 提交事务, 不加下面这行数据不会真正写到数据库里, 会发生事务回滚
+                    self.conn.commit()
+
+                except:
+                    print('error')
+                    # 部分提交
+                    # self.conn.commit()
+
+                    # 回滚事务
+                    self.conn.rollback()
+                finally:
+                    # 关闭 cursor 和 连接
+                    cursor.close()
+                    self.close_conn()
+            ```
         
     
 
