@@ -31,7 +31,7 @@
         - 关键字 `SELECT`, `FROM`, `WHERE`, `GROUP BY`, `HAVING`, `ORDER BY`, `LIMIT` (有序)
         - SELECT 语句尽量指定列名查询, 而不用 `SELECT *`
         
-### (二) Python API
+### (二) mysql-client API
 1. 环境配置以及依赖安装
     - python 3
     - mysql
@@ -118,6 +118,22 @@
                     cursor.close()
                     self.close_conn()
             ```
+            
+### (三) ORM
+1. ORM 介绍
+    - Python 中 ORM 的主要实现
+        - SqlObject
+        - peewee
+        - Django's ORM
+        - SQLAlchemy (本课所采用的实现)
+        
+2. 安装及配置
+    - pip install sqlalchemy
+    
+3. 模型介绍
+4. 新增数据
+5. 修改数据
+6. 查询
         
     
 
