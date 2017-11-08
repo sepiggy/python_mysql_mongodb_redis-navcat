@@ -133,14 +133,16 @@
 3. 模型介绍
 
 4. 新增数据
-    - Session.add()
-    - Session.add_all()
-    - Session.commit()
-    - Session.rollback()
+    - Session.add(): 增加单条数据
+    - Session.add_all(): 增加多条数据
+    - Session.commit(): 事务提交
+    - Session.rollback(): 事务回滚
     
+5. 查询数据
+    
+
 5. 修改数据
 
-6. 查询
     - 
         
     

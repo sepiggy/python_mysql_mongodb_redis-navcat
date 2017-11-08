@@ -30,10 +30,7 @@ class OrmTest(object):
         self.session = Session()
 
     def add_one(self):
-        '''
-        新增记录
-        :return:
-        '''
+        '''新增记录'''
         new_obj = News(
             title='标题',
             content='内容',
@@ -50,11 +47,33 @@ class OrmTest(object):
 
         return new_obj, new_obj2
 
+    def get_one(self):
+        '''获取一条数据'''
+        return self.session.query(News).get(122)
+
+    def get_more(self):
+        '''获取多条数据'''
+        return self.session.query(News).filter_by(is_valid=1)
+
 
 def main():
     obj = OrmTest()
-    rest = obj.add_one()
-    print(rest[0].id)
+    # rest = obj.add_one()
+    # print(rest[0].id)
+
+    # rest = obj.get_one()
+    # if rest:
+    #     print('ID:{0} => {1}'.format(rest.id, rest.title))
+    # else:
+    #     print('Not exist!')
+
+    rest = obj.get_more()
+    print(rest.count())
+    if rest:
+        for item in rest:
+            print('ID:{0} => {1}'.format(item.id, item.title))
+    else:
+        print('Not exist!')
 
 
 if __name__ == '__main__':
