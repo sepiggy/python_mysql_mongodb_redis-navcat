@@ -1,12 +1,15 @@
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
 
 # 获取连接
-engine = create_engine('mysql://root:12345@localhost:3306/news_test')
+engine = create_engine('mysql://root:12345@localhost:3306/news_test?charset=utf8')
 
 # 声明 Mapping
 Base = declarative_base()
+
+Session = sessionmaker(bind=engine)
 
 
 class News(Base):
@@ -20,3 +23,39 @@ class News(Base):
     view_count = Column('count', Integer, default=0)
     created_at = Column('created_at', DateTime, nullable=True)
     is_valid = Column('is_valid', Boolean)
+
+
+class OrmTest(object):
+    def __init__(self):
+        self.session = Session()
+
+    def add_one(self):
+        '''
+        新增记录
+        :return:
+        '''
+        new_obj = News(
+            title='标题',
+            content='内容',
+            types='百家',
+        )
+        new_obj2 = News(
+            title='标题',
+            content='内容',
+            types='百家',
+        )
+        self.session.add(new_obj)
+        self.session.add(new_obj2)
+        self.session.commit()
+
+        return new_obj, new_obj2
+
+
+def main():
+    obj = OrmTest()
+    rest = obj.add_one()
+    print(rest[0].id)
+
+
+if __name__ == '__main__':
+    main()

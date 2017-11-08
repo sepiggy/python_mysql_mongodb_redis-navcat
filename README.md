@@ -131,9 +131,17 @@
     - pip install sqlalchemy
     
 3. 模型介绍
+
 4. 新增数据
+    - Session.add()
+    - Session.add_all()
+    - Session.commit()
+    - Session.rollback()
+    
 5. 修改数据
+
 6. 查询
+    - 
         
     
 
