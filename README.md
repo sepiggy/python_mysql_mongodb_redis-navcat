@@ -133,17 +133,139 @@
 3. 模型介绍
 
 4. 新增数据
-    - Session.add(): 增加单条数据
-    - Session.add_all(): 增加多条数据
-    - Session.commit(): 事务提交
-    - Session.rollback(): 事务回滚
+    - 新增单条记录
+        - 使用 `Session.add()` 增加单条记录
+        - 使用 `Session.commit()` 进行事务提交
+        ```python
+        def add_one(self):
+            '''新增单条记录'''
+
+            new_obj = News(
+                title='标题',
+                content='内容',
+                types='百家',
+            )
+            self.session.add(new_obj)
+            self.session.commit()
+
+            return new_obj
+        ```
+        
+    - 新增多条记录
+        - 调用多次 `Session.add()` 或者一次 `Session.add_all()` 来增加多条记录
+        - 使用 `Session.commit()` 进行事务提交
+        - 若多条记录插入不成功, 使用 `Session.rollback` 回滚
+        ```python
+        def add_more(self):
+            '''新增多条记录'''
+
+            new_obj = News(
+                title='标题',
+                content='内容',
+                types='百家',
+            )
+            new_obj2 = News(
+                title='标题',
+                content='内容',
+                types='百家',
+            )
+            self.session.add(new_obj)
+            self.session.add(new_obj2)
+            self.session.commit()
+
+            return new_obj, new_obj2
+        ```
     
 5. 查询数据
+    - 查询一条记录
+        - 使用 `Session.query(类名).get()` 来获取一条记录
+        ```python
+        def get_one(self):
+            '''获取一条记录'''
+            return self.session.query(News).get(122)
+        ``` 
+
+    - 查询多条记录
+        - 使用 `Session.query(类名).filter_by(过滤条件)` 来获取多条记录
+        ```python
+        def get_more(self):
+            '''获取多条记录'''
+            return self.session.query(News).filter_by(is_valid=1)
+        ```
+
+6. 修改数据
+    - 修改一条记录
+        - 先使用 `Session.query(类名).get()` 来获取这条记录所代表的对象
+        - 修改这个对象
+        - 通过 `Session.add(对象名)` 来修改这条记录
+        - 通过 `Session.commit()` 进行事务提交
+        ```python
+        def update_one(self, pk):
+            '''修改一条记录'''
+            if isinstance(pk, int):
+                # 获取要修改的数据
+                new_obj = self.session.query(News).get(pk)
+            if new_obj:
+                new_obj.is_valid = 0
+                self.session.add(new_obj)
+                self.session.commit()
+                return True
+            return False
+        ```
+        
+    - 修改多条记录
+        - 先使用 `Session.query(类名).filter_by(过滤条件)` 来获取多条记录所代表的 list
+        - 遍历这个 list: 修改 list 中的每个对象, 通过 `Session.add(对象名)` 来修改记录
+        - 通过 `Session.commit()` 进行事务提交
+        ```python
+        def update_more(self):
+            '''修改多条记录'''
+            # 获取要修改的数据
+            data_list = self.session.query(News).filter_by(is_valid=1)
+            if data_list:
+                for item in data_list:
+                    item.is_valid = 0
+                    self.session.add(item)
+                self.session.commit()
+                return True
+            return False
+        ```
     
+7. 删除数据
+    - 删除一条记录
+        - 先使用 `Session.query(类名).get()` 来获取这条记录所代表的对象
+        - 通过 `Session.delete(对象名)` 来删除这条记录
+        - 通过 `Session.commit()` 进行事务提交
+        ```python
+        def delete_one(self, pk):
+            '''删除单条记录'''
+            if isinstance(pk, int):
+                # 获取要删除的数据
+                new_obj = self.session.query(News).get(pk)
 
-5. 修改数据
-
-    - 
+            if new_obj:
+                self.session.delete(new_obj)
+                self.session.commit()
+                return True
+            return False
+        ```
+        
+    - 删除多条记录
+        - 先使用 `Session.query(类名).filter_by(过滤条件)` 来获取多条记录所代表的 list
+        - 遍历这个 list: 通过 `Session.delete(对象名)` 来删除记录
+        - 通过 `Session.commit()` 进行事务提交
+        ```python
+        def delete_more(self):
+            '''删除多条记录'''
+            # 获取要删除的数据
+            data_list = self.session.query(News).filter_by(is_valid=0)
+            if data_list:
+                for item in data_list:
+                    self.session.delete(item)
+                self.session.commit()
+                return True
+            return False
+        ```
         
     
 
