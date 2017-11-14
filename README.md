@@ -269,7 +269,12 @@
         
 ### (四) 网易新闻实战
 1. 项目概述
+
 2. flask 入门
+    - 安装
+        - pip install flask
+        - pip install flask-sqlalchemy
+    
 3. 搭建网易新闻框架
 4. 新闻前台
 5. 新闻数据的分页
@@ -277,7 +282,147 @@
 7. 新闻数据的修改
 8. 新闻数据的异步删除
         
-    
 
 ## 二 Python 操作 MongoDB
+### (一) MongoDB 数据库基础
+1. MongoDB 数据库介绍
+    - MongoDB 是面向文档的数据库
+    
+    - MongoDB 的几个概念
+        - 文档
+            - eg. `{"foo":3, "greeting":"Hello, world!"}`
+            - 文档几个要点
+                - 区分大小写
+                - key唯一, 不可重复
+                - 文档可嵌套
+                - 键值对是有序的
+                
+        - 集合
+            - 集合就是一组文档
+            - 文档类似于关系库里的行
+            - 集合类似于关系库里的表
+            - 集合中的文档无需固定的结构 (与关系型数据库的区别)
+            - 集合的命名规则
+                - 不能是空字符串( `""` )
+                - 不能包含 `\0` 字符 (空字符)
+                - 不能使用 `system.` 的前缀 (系统保留)
+                - 建议不包含保留字 `$`
+                - 用 `.` 分割不同命名空间的子集合 (eg. blog.users, blog.posts)
+                
+        - 数据库
+            - 多个文档组成集合, 多个集合组成数据库
+            - 一个实例可以承载多个数据库
+            - 每个数据库都有独立的权限
+            - 保留的数据库名称不要使用 (admin, local, config)
+    
+2. 安装以及配置
+    - 安装
+        - (Install on Red Hat)[http://www.mongoing.com/docs/tutorial/install-mongodb-on-red-hat.html]
+    
+    - 启动
+        - (Linux) sudo service mongodb start
+        
+    - 文档
+        - (MongoDB Manual)[https://docs.mongodb.com/manual/]
+        
+3. 使用命令行操作数据库 (CRUD)
+    - Mongo Shell
+        - 连接本地数据库 `mongo`
+        - 连接远程数据库 `mongo -u <user> -p <pass> --host <host> --port 28015`
+        
+    - Mongo Shell 常用命令
+        - 显示所有数据库 `show dbs`
+        - 切换数据库, 若该库不存在, 则创建它 `use 数据库名`
+        
+    - 新增文档 (Create)
+        - MongoDB 中提供了以下方法来插入文档到一个集合：
+            - db.collection.insert()
+            - db.collection.insertOne() *New in version 3.2*
+            - db.collection.insertMany() *New in version 3.2*
+            
+        - `db.collection.insert()` 向集合插入一个或多个文档. 要想插入一个文档, 传递一个文档给该方法; 要想插入多个文档, 传递文档数组给该方法
+            ```
+            db.users.insert(
+                {
+                    name: "sue",
+                    age: 19,
+                    status: "P"
+                }
+            )
+            ```
+            
+        - `db.collection.insertOne()` 向集合插入单个文档
+        
+        - `db.collection.insertMany()` 向集合插入多个文档
+        
+    - 查询文档 (Read)
+        - MongoDB 提供如下方法查询集合中的文档:
+            - `db.collection.find(过滤条件, 映射)`
+                - 过滤条件指明返回哪些文档
+                - 查询映射指明返回匹配文档的哪些字段, 映射限制了 MongoDB 通过网络返回给客户端的数据量
+                
+            - `db.collection.findOne()`
+        
+    - 修改文档 (Update)
+        - MongoDB 提供如下方法更新集合中的文档:
+            - `db.collection.updateOne()`	即使可能有多个文档通过过滤条件匹配到，但是也最多也只更新一个文档
+            - `db.collection.updateMany()` 更新所有通过过滤条件匹配到的文档
+            - `db.collection.update(过滤条件, 替换后的文档内容)` 即使可能有多个文档通过过滤条件匹配到，但是也最多也只更新或者替换一个文档
+            
+    - 删除文档 (Delete)
+        - MongoDB 提供如下方法删除集合中的文档:
+            - `db.collection.remove(过滤条件)`
+            - `db.collection.deleteOne()`
+            - `db.collection.deleteMany()`
+     
+4. 练习任务
+    - 创建一个学生信息表（至少包含：姓名，性别，成绩，年龄）
+    - 写入十五条不同的数据
+        ```
+        db.students.insertMany(
+       [{ name: "bob", age: 16, sex: "male", grade: 95},
+         { name: "ahn", age: 18, sex: "female", grade: 45},
+         { name: "xi", age: 15, sex: "male", grade: 75},
+         { name: "bob1", age: 16, sex: "male", grade: 95},
+         { name: "ahn1", age: 18, sex: "male", grade: 45},
+         { name: "xi1", age: 15, sex: "female", grade: 55},
+         { name: "bob2", age: 16, sex: "female", grade: 95},
+         { name: "ahn2", age: 18, sex: "male", grade: 60},
+         { name: "xi2", age: 15, sex: "male", grade: 75},
+         { name: "bob3", age: 16, sex: "male", grade: 95},
+         { name: "ahn3", age: 18, sex: "female", grade: 45},
+         { name: "xi3", age: 15, sex: "male", grade: 85},
+         { name: "bob4", age: 16, sex: "female", grade: 95},
+         { name: "ahn4", age: 18, sex: "male", grade: 45},
+         { name: "xi4", age: 15, sex: "male", grade: 75}
+       ] )
+        ```
+        
+    - 查询所有的男生数据（只需要学生的姓名和年龄）
+        ```
+        db.students.find({sex: 'male'}, {name: 1, age: true, _id: 0})
+        ```
+    
+    - 查询成绩及格的学生信息（学生成绩大于或等于 60 分）
+        ```
+        db.students.find({grade: {'$gte': 60}})
+        ```
+    
+    - 查询所有 18 岁的男生和 16 岁的女生的数据
+        ```
+        db.students.find({'$or': [{sex: 'male', age: 18}, {sex: 'female', age: 16}]})
+        ```
+    
+    - 按照学生的年龄进行排序
+        ```
+        db.students.find().sort({age: 1})
+        ```
+    
+    - 将所有的女学生年龄增加一岁
+        ```
+        db.students.update({sex: 'female'}, {'$inc': {age: 1}}, {multi: true})
+        ```
+    
+5. 图形化管理工具操作
+
 ## 三 Python 操作 Redis
